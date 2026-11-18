@@ -13,11 +13,18 @@ on:
 jobs:
   build:
     runs-on: macos-14
+    # no timeout so a queued mac runner is not auto-cancelled
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show Xcode version
-        run: xcodebuild -version
+      - name: Preflight (proves the runner booted)
+        run: |
+          echo "runner: $(uname -a)"
+          sw_vers
+          xcodebuild -version
+
+      - name: Install xcodegen again if missing
+        run: which xcodegen || brew install xcodegen
 
       - name: Install xcodegen
         run: brew install xcodegen
