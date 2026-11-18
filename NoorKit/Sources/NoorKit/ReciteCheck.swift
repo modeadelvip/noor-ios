@@ -374,48 +374,120 @@ public enum ReciteCheck {
     }
 
     // ---------------------------------------------------------------- whole-Quran locate
-    /// returns (global ayah, word offset inside that ayah) — the anchor of the recitation
-    public static func locate(_ spoken: String) -> (global: Int, offset: Int)? {
-        let q = Quran.shared
-        let sw = normalize(spoken).split(separator: " ").map(String.init)
-        guard sw.count >= 3, !q.flatText.isEmpty else { return nil }
-        let big = q.flatText as NSString
+    private static var exactIndex: [String: [Int]] = [:]
+    private static var firstIndex: [Character: [String: [Int]]] = [:]
 
-        var bestLen = 0, bestP = 0, bestQ = 0
-        var p = 0
-        while p + 2 < sw.count {
-            var len = 7
-            while len >= 3 {
-                if p + len <= sw.count && len > bestLen {
-                    let gram = sw[p..<(p + len)].joined(separator: " ")
-                    let at = big.range(of: gram).location
-                    if at != NSNotFound {
-                        bestLen = len; bestP = p; bestQ = q.wordAt(charOffset: at)
-                        break
+    static func buildWordIndex() {
+        guard exactIndex.isEmpty else { return }
+        let q = Quran.shared
+        for (pos, w) in q.flatWords.enumerated() {
+            exactIndex[w, default: []].append(pos)
+            if let f = w.first { firstIndex[f, default: [:]][w, default: []].append(pos) }
+        }
+    }
+
+    /// how well the spoken words line up when the recitation starts at `anchor`
+    static func posScore(_ anchor: Int, _ sw: [String]) -> Double {
+        let q = Quran.shared
+        var hits = 0.0, exacts = 0.0
+        for (i, w) in sw.prefix(12).enumerated() {
+            let pos = anchor + i
+            if pos >= q.flatWords.count { break }
+            let t = q.flatWords[pos]
+            if t == w { exacts += 1; hits += 2.0 }
+            else if skeleton(t) == skeleton(w) { hits += 1.2 }
+            else if similarity(t, w) >= 0.8 { hits += 0.8 }
+        }
+        return hits + 1.5 * exacts
+    }
+
+    /**
+     Finds where a recitation starts.
+
+     Not an exact n-gram search: a single wrong word (الحمده) or a mid-page start used to
+     defeat it and the whole check failed ("مش قادرين نحدد الآية"). Instead we vote on
+     *anchor word positions* (exact hits + fuzzy hits, anchored by the word's order),
+     then re-score the best candidates word-by-word («second opinion») so surahs with
+     identical openings resolve, and finally apply a confidence guard so non-Quranian
+     input is refused honestly instead of being graded as noise.
+     */
+    public static func locate(_ spoken: String, hintSura: Int? = nil) -> (global: Int, offset: Int)? {
+        let q = Quran.shared
+        buildWordIndex()
+        let sw = normalize(spoken).split(separator: " ").map(String.init)
+        guard sw.count >= 2, !q.flatWords.isEmpty else { return nil }
+
+        var votes: [Int: (score: Double, count: Int)] = [:]
+        for (i, w) in sw.enumerated() {
+            let informative = w.count >= 3 || (sw.count <= 6 && !["ما", "في", "من", "على", "الا", "هو"].contains(w))
+            if !informative && sw.count > 3 { continue }
+            var cands: [(Int, Double)] = (exactIndex[w] ?? []).prefix(200).map { ($0, 1.6) }
+            if cands.count < 200, let bucket = firstIndex[w.first ?? " "] {
+                for (pw, list) in bucket {
+                    if abs(pw.count - w.count) > 1 || pw == w { continue }
+                    let sim = similarity(w, pw)
+                    if sim >= 0.8 {
+                        for p in list.prefix(100) { cands.append((p, 1.2 * sim)) }
                     }
                 }
-                len -= 1
             }
-            if bestLen >= 9 { break }
-            p += 1
+            for (p, sc) in cands.prefix(300) {
+                let a = p - i
+                if a < 0 { continue }
+                let v = votes[a] ?? (0, 0)
+                votes[a] = (v.score + sc, v.count + 1)
+            }
         }
-        guard bestLen > 0 else { return nil }
-        let startWord = max(0, bestQ - bestP)
-        guard startWord < q.wordAyah.count else { return nil }
-        let global = q.wordAyah[startWord]
+        guard !votes.isEmpty else { return nil }
+
+        let top = votes.sorted { ($0.value.score + 0.8 * Double($0.value.count)) > ($1.value.score + 0.8 * Double($1.value.count)) }
+            .prefix(12)
+        var bestA = -1
+        var bestS = -Double.greatestFiniteMagnitude
+        for (a, _) in top {
+            if a >= q.wordAyah.count { continue }
+            let s2 = posScore(a, sw)
+            if s2 > bestS { bestS = s2; bestA = a }
+        }
+        guard bestA >= 0 else { return nil }
+
+        var agree = 0, exactHits = 0, run = 0, bestRun = 0
+        for (i, w) in sw.prefix(10).enumerated() {
+            let pos = bestA + i
+            if pos >= q.flatWords.count { break }
+            let t = q.flatWords[pos]
+            let ok = (t == w) || (similarity(t, w) >= 0.8 && w.count >= 3)
+            if t == w { exactHits += 1 }
+            if ok { agree += 1; run += 1; bestRun = max(bestRun, run) } else { run = 0 }
+        }
+        let compareN = min(sw.count, 10)
+        let need = sw.count > 2 ? 2 : 1
+        guard agree >= need, bestRun >= need, exactHits >= 1,
+              Double(agree) / Double(max(1, compareN)) >= 0.5 else { return nil }
+
+        // «السورة اللي بتقرأها» wins ties between identical openings
+        if let hint = hintSura {
+            for (a, _) in top where a < q.wordAyah.count {
+                if q.toSurahAyah(q.wordAyah[a]).0 == hint, posScore(a, sw) >= bestS - 0.6 {
+                    bestA = a
+                    break
+                }
+            }
+        }
+        let global = q.wordAyah[bestA]
         let (from, _) = q.wordsOf(global)
-        return (global, max(0, startWord - from))
+        return (global, max(0, bestA - from))
     }
 
     // ---------------------------------------------------------------- the «فحص» pass
     /// Grades the whole transcript in ONE pass with a word-level diff, so a missing
     /// word never shifts the rest of the page (the 5.3 fix, ported 1:1).
-    public static func analyze(_ spoken: String) -> Session {
+    public static func analyze(_ spoken: String, hintSura: Int = 0) -> Session {
         let q = Quran.shared
         var se = Session()
         let sw = words(spoken)
         se.heardWords = sw.count
-        guard let anchor = locate(spoken), sw.count >= 3 else {
+        guard let anchor = locate(spoken, hintSura: hintSura > 0 ? hintSura : nil), sw.count >= 3 else {
             se.feedback = "مش قادرين نحدد الآية — اقرأ آية كاملة بوضوح"
             return se
         }
