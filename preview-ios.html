@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نور — آيفون (معاينة)</title>
+<style>
+  :root{
+    --bg:#070c16; --card:#101a2b; --card2:#152238; --surface:#0d1420;
+    --gold:#e7be72; --teal:#3fbf9f; --red:#e05a55; --amber:#d48a2a;
+    --sub:#8a94a6; --txt:#f2f5fa; --paper:#fffdf7; --ink:#1b1a17; --inksoft:#6b6355;
+    --paperRed:#b3261e; --paperAmber:#b36b00; --paperGreen:#1b6b3a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#04070d;font-family:-apple-system,"SF Arabic","Segoe UI",Tahoma,sans-serif;
+       color:var(--txt);padding:24px 14px 60px}
+  .wrap{max-width:1120px;margin:0 auto}
+  h1{font-size:26px;color:var(--gold);margin:0 0 6px}
+  .lead{color:var(--sub);font-size:14px;line-height:1.7;margin:0 0 26px}
+  .phones{display:flex;gap:26px;flex-wrap:wrap;justify-content:center}
+  .phone{width:340px;border-radius:44px;background:var(--bg);border:9px solid #1b2130;
+         box-shadow:0 26px 60px rgba(0,0,0,.6);overflow:hidden;flex:0 0 auto}
+  .notch{height:26px;display:flex;align-items:center;justify-content:center}
+  .notch i{width:92px;height:15px;border-radius:9px;background:#0b1018;display:block}
+  .hdr{display:flex;justify-content:space-between;padding:4px 16px 10px;align-items:center}
+  .hdr .logo{color:var(--gold);font-weight:800;font-size:22px}
+  .hdr .sub{color:var(--sub);font-size:10px;text-align:left;line-height:1.5}
+  .screen{padding:0 12px 78px;height:660px;overflow-y:auto;scrollbar-width:none}
+  .screen::-webkit-scrollbar{display:none}
+  .card{background:var(--card);border-radius:16px;padding:13px;margin-bottom:10px}
+  .card.flat{background:var(--surface)}
+  .t-gold{color:var(--gold);font-weight:700}
+  .t-sub{color:var(--sub);font-size:11px;line-height:1.65}
+  .row{display:flex;gap:5px;margin-top:9px}
+  .pill{flex:1;text-align:center;border-radius:20px;padding:8px 4px;font-size:10.5px;color:var(--sub);background:#1b2740}
+  .pill.on{background:var(--gold);color:#1b1408;font-weight:700}
+  .chip{display:inline-block;border-radius:16px;padding:6px 11px;font-size:10.5px;background:#1b2740;color:var(--sub);margin-inline-start:5px}
+  .chip.on{background:var(--gold);color:#1b1408;font-weight:700}
+  .micwrap{display:flex;justify-content:center;margin:4px 0 10px}
+  .mic{width:78px;height:78px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px}
+  .mic.rec{background:var(--red)}
+  .mic.gold{background:var(--gold);color:#1b1408}
+  .bar{height:8px;border-radius:6px;background:#1b2740;overflow:hidden;margin:8px 26px}
+  .bar i{display:block;height:100%;background:var(--teal)}
+  .center{text-align:center}
+  .status{font-size:12px;color:var(--teal);font-weight:600;text-align:center;margin-top:4px}
+  .log{background:var(--surface);border-radius:12px;padding:9px;margin-top:9px}
+  .log div{font-size:11px;color:var(--txt);margin-top:3px}
+  .btn{flex:1;border-radius:22px;padding:12px;text-align:center;font-size:12.5px;font-weight:700}
+  .btn.gold{background:var(--gold);color:#1b1408}
+  .btn.gray{background:var(--card2);color:var(--txt);font-weight:600}
+  .btnrow{display:flex;gap:7px;margin-top:9px}
+  .paper{background:var(--paper);border-radius:16px;padding:13px;margin-bottom:10px;color:var(--ink)}
+  .paper .meta{display:flex;justify-content:space-between;font-size:11px;color:var(--inksoft);font-weight:700;margin-bottom:6px}
+  .ayah{font-size:19px;line-height:2;text-align:right;font-family:"SF Arabic","Traditional Arabic",serif}
+  .ok{color:var(--paperGreen)} .hk{color:var(--paperAmber)} .bad{color:var(--paperRed);text-decoration:underline}
+  .miss{color:#a9a294;text-decoration:underline}
+  .stats{display:flex;gap:6px;margin-top:8px}
+  .stat{flex:1;text-align:center;background:var(--surface);border-radius:11px;padding:7px 2px}
+  .stat b{display:block;font-size:14px} .stat span{font-size:9px;color:var(--sub)}
+  .mistake{border-bottom:1px solid #1b2740;padding:7px 0}
+  .mistake .k{font-size:12px;font-weight:700}
+  .mistake .d{font-size:10px;color:var(--amber);margin-top:2px}
+  .mistake .g{font-size:11px;color:var(--sub)}
+  .tabs{position:sticky;bottom:0;display:flex;background:var(--card);border-top:1px solid #1b2740;padding:8px 4px 6px}
+  .tabs div{flex:1;text-align:center;font-size:9.5px;color:var(--sub)}
+  .tabs div b{display:block;font-size:18px;font-weight:400;margin-bottom:2px}
+  .tabs div.on{color:var(--gold)}
+  .notes{max-width:760px;margin:34px auto 0;background:#0b1220;border:1px solid #1b2740;border-radius:18px;padding:20px}
+  .notes h2{color:var(--gold);font-size:17px;margin:0 0 12px}
+  .notes li{color:#c9d2e0;font-size:13px;line-height:1.85;margin-bottom:6px}
+  .notes code{background:#16213a;color:#e7be72;border-radius:6px;padding:1px 5px;font-size:12px}
+  .badge{display:inline-block;background:#152238;color:var(--gold);border-radius:20px;padding:4px 10px;font-size:11px;margin:0 4px 6px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>نور — نسخة آيفون (SwiftUI)</h1>
+  <p class="lead">
+    نفس محرك التصحيح اللي بنيناه لأندرويد، منقول بالكامل للـ Swift:
+    محاذاة كلمة‑بكلمة، قياس الحركات، وتقرير واحد بكل الأخطاء. التسجيل مستمر ومفيش فحص تلقائي —
+    تقرأ براحتك وتضغط <b style="color:var(--gold)">فحص</b> مرة واحدة.
+  </p>
+
+  <div class="phones">
+    <!-- ============ phone 1 : recording ============ -->
+    <div class="phone">
+      <div class="notch"><i></i></div>
+      <div class="hdr">
+        <div class="logo">نُور</div>
+        <div class="sub">مواقيت · قرآن · أذكار · تلاوة<br>نور ١٫٠ — آيفون</div>
+      </div>
+      <div class="screen">
+        <div class="card">
+          <div class="t-gold" style="font-size:15px">🎧 اقرأ براحتك — وافحص لما تخلص</div>
+          <div class="t-sub" style="margin-top:5px">التسجيل مستمر ومش بيقاطعك، ومفيش فحص تلقائي. اضغط المايك واقرأ، ولما تخلص اضغط «فحص» مرة واحدة.</div>
+          <div class="row"><div class="pill on">🎤 اتكلم</div><div class="pill">🎙 مسجل</div><div class="pill">⌨️ كتابة</div></div>
+          <div style="margin-top:9px"><span class="chip on">بدون تشكيل</span><span class="chip">تشخيص</span></div>
+        </div>
+
+        <div class="card">
+          <div class="micwrap"><div class="mic rec">⏸</div></div>
+          <div class="bar"><i style="width:62%"></i></div>
+          <div class="center t-sub">🔈 مستوى الصوت <b style="color:var(--teal)">واصل ✅</b></div>
+          <div class="status">🔴 بيسجّل… اقرأ براحتك ومن غير ما تقف</div>
+          <div class="log">
+            <div class="t-sub">آخر اللي وصل (٣ جملة)</div>
+            <div>• الحمد لله رب العالمين</div>
+            <div>• الرحمن الرحيم مالك يوم الدين</div>
+            <div>• إياك نعبد وإياك نستعين</div>
+          </div>
+        </div>
+
+        <div class="btnrow"><div class="btn gold">🔍 فحص الكلام اللي قريته</div><div class="btn gray">امسح</div></div>
+        <div class="center t-sub" style="margin-top:6px">متسجل: ١٤ كلمة · مش متفحّص بعد</div>
+
+        <div class="card flat" style="margin-top:10px">
+          <div class="t-gold" style="font-size:13px">إزاي بتستخدمها</div>
+          <div class="t-sub" style="margin-top:6px">١. اضغط المايك — بيسجّل بدون ما يقاطعك.</div>
+          <div class="t-sub">٢. اقرأ اللي إنت عايزه: آية، صفحة، أو ربع.</div>
+          <div class="t-sub">٣. لما تخلص اضغط «🔍 فحص» مرة واحدة.</div>
+          <div class="t-sub">٤. التقرير يقولك قريت منين لفين وكل غلطة.</div>
+        </div>
+      </div>
+      <div class="tabs"><div class="on"><b>🎙</b>تلاوة</div><div><b>📖</b>المصحف</div><div><b>🎧</b>استماع</div><div><b>⋯</b>المزيد</div></div>
+    </div>
+
+    <!-- ============ phone 2 : report ============ -->
+    <div class="phone">
+      <div class="notch"><i></i></div>
+      <div class="hdr">
+        <div class="logo">نُور</div>
+        <div class="sub">مواقيت · قرآن · أذكار · تلاوة<br>نور ١٫٠ — آيفون</div>
+      </div>
+      <div class="screen">
+        <div class="card">
+          <div class="t-gold" style="font-size:14px">📍 سورة الكهف · من آية ١ إلى ٣</div>
+          <div class="stats">
+            <div class="stat"><b style="color:var(--teal)">٩٤%</b><span>الدقة</span></div>
+            <div class="stat"><b style="color:var(--teal)">٤٩</b><span>صح</span></div>
+            <div class="stat"><b style="color:var(--red)">٢</b><span>غلط</span></div>
+            <div class="stat"><b style="color:var(--sub)">١</b><span>ناقص</span></div>
+            <div class="stat"><b style="color:var(--amber)">١</b><span>حركة</span></div>
+          </div>
+          <div class="t-sub" style="margin-top:8px">فيه ٣ خطأ — شوف القايمة تحت</div>
+        </div>
+
+        <div class="paper">
+          <div class="meta"><span>آية ١</span><span style="color:var(--paperGreen)">١٠٠%</span></div>
+          <div class="ayah">
+            <span class="ok">الحمد</span> <span class="ok">لله</span> <span class="ok">الذي</span>
+            <span class="ok">أنزل</span> <span class="ok">على</span> <span class="ok">عبده</span>
+            <span class="ok">الكتاب</span> <span class="ok">ولم</span> <span class="ok">يجعل</span>
+            <span class="ok">له</span> <span class="ok">عوجا</span>
+          </div>
+        </div>
+
+        <div class="paper">
+          <div class="meta"><span>آية ٢</span><span style="color:var(--paperAmber)">٧٣%</span></div>
+          <div class="ayah">
+            <span class="ok">قيما</span> <span class="hk">لينذر</span> <span class="bad">بأسه</span>
+            <span class="ok">شديدا</span> <span class="miss">من</span> <span class="ok">لدنه</span>
+            <span class="ok">ويبشر</span> <span class="ok">المؤمنين</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="t-gold" style="font-size:13px">📋 كل الأخطاء (٣)</div>
+          <div class="mistake">
+            <div class="k">آية ٢ · كلمة غلط: بأسه</div>
+            <div class="g">قلت: باسه</div>
+            <div class="d">«أ» ← «ا»</div>
+          </div>
+          <div class="mistake">
+            <div class="k">آية ٢ · ناقصة: من</div>
+            <div class="g">الكلمة مش متقروءة</div>
+          </div>
+          <div class="mistake">
+            <div class="k">آية ٢ · حركة: لينذر</div>
+            <div class="g">قلت: لِينذِر</div>
+            <div class="d">الحرف ١: المتوقع فتحة والمقروء كسرة</div>
+          </div>
+        </div>
+
+        <div class="btnrow"><div class="btn gray">🎤 كمّل تسجيل</div><div class="btn gray">🔁 امسح</div></div>
+      </div>
+      <div class="tabs"><div class="on"><b>🎙</b>تلاوة</div><div><b>📖</b>المصحف</div><div><b>🎧</b>استماع</div><div><b>⋯</b>المزيد</div></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>اللي جوه نسخة الآيفون</h2>
+    <div class="badge">SwiftUI · iOS 16+</div>
+    <div class="badge">NoorKit (Swift Package)</div>
+    <div class="badge">١٠٠٪ محلي</div>
+    <ul>
+      <li><b>التسجيل:</b> <code>AVAudioEngine</code> + <code>SFSpeechRecognizer</code> بجملة مستمرة — iOS بيقطع الجلسة كل دقيقة في التطبيق بيعيدها <b>بصمت</b> من غير ما يسألك.</li>
+      <li><b>بدائل التسجيل:</b> مسجل صوتي <code>m4a</code> (٤٤١ كيلوهرتز) + كتابة/لصق — يعني حتى لو التعرّف الصوتي مش شغال، التطبيق شغال.</li>
+      <li><b>المحرك:</b> نفس منطق أندرويد بالحرف — تطبيع عثماني، هيكل الحروف (بدون ا/و/ي)، تشابه Levenshtein، محاذاة DP كلمة‑بكلمة، وحركات مع «لا تعاقب على تشكيل مش موصول».</li>
+      <li><b>القرآن:</b> ١١٤ سورة / ٦٢٣٦ آية مضمّنة جوه التطبيق (<code>quran.json</code>) — مفيش إنترنت مطلوب للفحص.</li>
+      <li><b>الصوت:</b> سلسلة بدائل — القارئ المختار، وبعده باقي القرّاء تلقائيًا لو التحميل فشل.</li>
+      <li><b>مفيش كراش:</b> كل عناصر الواجهة مبنية من مكوّنات بسيطة، و<a style="color:var(--gold)">تقرير آخر خطأ</a> في «المزيد» بينسخ الترييس.</li>
+    </ul>
+    <h2 style="margin-top:18px">إزاي تبنيها</h2>
+    <ul>
+      <li>على الماك: <code>xcodegen generate</code> ← <code>open Noor.xcodeproj</code> ← اختار تيمك في Signing وشغّل على الآيفون.</li>
+      <li>أو من غير xcodegen: Xcode ← File ▸ Add Packages… ▸ Add Local… واختار مجلد <code>NoorKit</code>، ضيف ملفات <code>Noor/</code> لمشروع جديد، والصق <code>Info.plist</code>.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

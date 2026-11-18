@@ -1,0 +1,33 @@
+name: Noor
+options:
+  bundleIdPrefix: com.noor
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+packages:
+  NoorKit:
+    path: NoorKit
+targets:
+  Noor:
+    type: application
+    platform: iOS
+    sources:
+      - path: Noor
+    info:
+      path: Noor/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.noor.islamic
+        INFOPLIST_FILE: Noor/Info.plist
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    dependencies:
+      - package: NoorKit
+        product: NoorKit

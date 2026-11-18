@@ -1,0 +1,2 @@
+*.json   -diff linguist-generated
+*.swift  text

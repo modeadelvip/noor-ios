@@ -1,0 +1,58 @@
+name: Build Noor IPA
+
+# Builds an *unsigned* .ipa on GitHub's macOS runners.
+# Usage: push this repo to GitHub → Actions → "Build Noor IPA" → Run workflow
+#        → download the "Noor-unsigned-ipa" artifact.
+# Then sign it on Windows with Sideloadly (your free Apple ID) — see README.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate the Xcode project
+        run: xcodegen generate
+
+      - name: Build (no code signing)
+        run: |
+          xcodebuild \
+            -project Noor.xcodeproj \
+            -scheme Noor \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -destination 'generic/platform=iOS' \
+            build | xcpretty || xcodebuild \
+            -project Noor.xcodeproj -scheme Noor -configuration Release -sdk iphoneos \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+
+      - name: Package the .ipa
+        run: |
+          APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
+          echo "found: $APP"
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry Noor-unsigned.ipa Payload
+          ls -lh Noor-unsigned.ipa
+
+      - name: Upload the artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Noor-unsigned-ipa
+          path: Noor-unsigned.ipa
+          retention-days: 30
