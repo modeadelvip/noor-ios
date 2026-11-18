@@ -1,0 +1,12 @@
+name: macdiag
+on: workflow_dispatch
+jobs:
+  t14:
+    runs-on: macos-14
+    steps: [{run: "sw_vers && xcodebuild -version"}]
+  t15:
+    runs-on: macos-15
+    steps: [{run: "sw_vers && xcodebuild -version"}]
+  t13:
+    runs-on: macos-13
+    steps: [{run: "sw_vers && xcodebuild -version"}]
