@@ -1,0 +1,35 @@
+# Codemagic — بديل مجاني (٥٠٠ دقيقة/شهر) لبناء .ipa بدون ماك وبدون بطاقة دفع.
+# ارفع الريبو على codemagic.io ← اختار Noor-iOS ← Start new build ← الملف ده بيتقرأ تلقائي.
+
+workflows:
+  ios-unsigned:
+    name: Noor — IPA غير موقّع (توقّعه على جهازك بـ Sideloadly)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      vars:
+        XCODE_PROJECT: "Noor.xcodeproj"
+        XCODE_SCHEME: "Noor"
+    scripts:
+      - name: تثبيت xcodegen
+        script: |
+          brew install xcodegen || true
+          xcodegen --version
+      - name: توليد مشروع Xcode
+        script: xcodegen generate
+      - name: بناء التطبيق (بدون توقيع)
+        script: |
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
+            -configuration Release -sdk iphoneos -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: تجهيز ملف ipa
+        script: |
+          mkdir -p ipa/Payload
+          cp -R build/Build/Products/Release-iphoneos/Noor.app ipa/Payload/
+          cd ipa && zip -qry ../Noor-unsigned.ipa Payload
+          ls -lh ../Noor-unsigned.ipa
+    artifacts:
+      - Noor-unsigned.ipa
+      - build/Build/Products/Release-iphoneos/*.app
+      - build/Build/Products/Release-iphoneos/*.dSYM
